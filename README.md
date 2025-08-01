@@ -1,73 +1,65 @@
-# FFmpeg 启动脚本生成器
+# FFmpeg 多媒体处理工具集
 
 ![Streamlit App](https://img.shields.io/badge/Streamlit-FF4B4B?style=for-the-badge&logo=Streamlit&logoColor=white)
 ![FFmpeg](https://img.shields.io/badge/FFmpeg-007808?style=for-the-badge&logo=ffmpeg&logoColor=white)
 
-一个基于Streamlit的图形化工具，帮助用户轻松生成复杂的FFmpeg命令行脚本，无需记忆繁琐的参数。
-
+一个基于Streamlit的图形化工具集，帮助用户轻松完成视频字幕处理、音频提取与合并等多媒体任务，无需记忆复杂的FFmpeg命令行参数。
 
 ## ✨ 功能特性
 
 - 🖥️ 直观的图形用户界面，无需命令行经验
-- 📽️ 支持多种常见转码操作：格式转换、分辨率调整、码率控制等
-- 🔧 自定义编解码器、帧率、比特率等高级参数
+- 🔤 **字幕处理工具**：
+  - 将字幕烧录到视频（硬字幕）
+  - 从视频中提取软字幕（支持SRT、ASS、SSA等格式）
+  - 支持多轨道字幕选择与自定义字符编码
+- 🔊 **音频处理工具**：
+  - 从视频中提取音频（支持MP3、AAC、WAV等格式）
+  - 合并音视频文件
+  - 音频质量与编码参数自定义
+- 🎞️ 自定义输出文件名与格式
 - 🔄 实时预览生成的FFmpeg命令
 - 📋 一键复制命令到剪贴板
-- 💾 保存常用配置为预设模板
-- 📊 可视化显示转码前后的文件信息对比
 
 ## 🚀 快速开始
 
 ### 前置要求
-- Python
-- FFmpeg (已添加到系统PATH)
+- Python 3.8+
+- FFmpeg（已添加到系统PATH）
 
-### 安装方法
+### 使用方法
+1. 下载项目到本地
+2. 双击运行 **启动.bat** 文件
+3. 在浏览器中打开显示的本地地址（通常是 http://localhost:8501）
 
-1. 克隆仓库(或直接下载)：
-```bash
-git clone https://github.com/your-username/ffmpeg-command-generator.git
-cd ffmpeg-command-generator
-```
-2. 运行应用：
-```bash
-双击启动.bat
-```
 ## 🖥️ 界面预览
 
-| 主界面 | 预设管理 |
+| 主界面 | 字幕处理 |
 |-------|----------|
-| ![主界面](https://via.placeholder.com/400x250/2D3748/FFFFFF?text=FFmpeg+Generator+Main) | ![预设管理](https://via.placeholder.com/400x250/2D3748/FFFFFF?text=Preset+Management) |
+| ![主界面](https://youke1.picui.cn/s1/2025/08/01/688ca9aaea0a8.png) | ![字幕处理](https://youke1.picui.cn/s1/2025/08/01/688ca9aacaf44.png) |
 
-| 命令预览 | 文件信息 |
+| 音频处理 | 命令预览 |
 |----------|----------|
-| ![命令预览](https://via.placeholder.com/400x250/2D3748/FFFFFF?text=Command+Preview) | ![文件信息](https://via.placeholder.com/400x250/2D3748/FFFFFF?text=File+Metadata) |
+| ![音频处理](https://youke1.picui.cn/s1/2025/08/01/688ca9aaa611c.png) | ![命令预览](https://youke1.picui.cn/s1/2025/08/01/688ca9a96c782.png) |
 
 ## 🛠️ 使用指南
 
-1. **输入文件名称** - 视频.mp4,字幕.srt等(带文件后缀名
-2. **配置转码参数**：
-   - 选择输出格式（MP4, MKV, WEBM等）
-   - 调整视频设置（分辨率、帧率、码率）
-   - 配置音频设置（采样率、声道、音量）
-   - 添加滤镜（裁剪、旋转、水印等）
-3. **预览命令** - 实时查看生成的FFmpeg命令
-4. **执行或保存**：
-   - 复制命令并且在视频文件目录打开cmd粘贴以使用
+### 字幕处理工具
+1. 选择"烧录字幕到视频"或"从视频提取软字幕"选项卡
+2. 输入视频/字幕文件名（包括后缀）
+3. 根据需要调整高级选项（字幕轨道、编码格式等）
+4. 点击"生成FFmpeg命令"按钮
+5. 复制命令到视频文件所在目录的命令行中执行
 
-## 🤝 如何贡献
-
-欢迎提交Issue和Pull Request！请遵循以下步骤：
-
-1. Fork项目仓库
-2. 创建特性分支 (`git checkout -b feature/AmazingFeature`)
-3. 提交更改 (`git commit -m 'Add some AmazingFeature'`)
-4. 推送到分支 (`git push origin feature/AmazingFeature`)
-5. 发起Pull Request
+### 音频处理工具
+1. 选择"提取音频"或"合并音视频"选项卡
+2. 输入源文件名称
+3. 选择输出格式与质量参数
+4. 可选择自定义输出文件名
+5. 生成并复制命令执行
 
 ## 📜 许可证
 
-[![License:MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)本项目采用 [MIT 许可证](LICENSE)
+本项目采用 [MIT 许可证](LICENSE)
 
 ## 📞 联系
 
