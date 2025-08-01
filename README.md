@@ -24,18 +24,12 @@
 
 ### 安装方法
 
-1. 克隆仓库：
+1. 克隆仓库(或直接下载)：
 ```bash
 git clone https://github.com/your-username/ffmpeg-command-generator.git
 cd ffmpeg-command-generator
 ```
-
-2. 安装依赖：
-```bash
-pip install -r requirements.txt
-```
-
-3. 运行应用：
+2. 运行应用：
 ```bash
 双击启动.bat
 ```
