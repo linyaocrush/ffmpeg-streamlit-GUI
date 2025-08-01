@@ -8,12 +8,16 @@ st.markdown("""
 
 ## 当前可用工具
 - **字幕烧录命令生成器** - 生成 FFmpeg 字幕烧录命令
+- **音频处理工具** - 提取视频中的音频以及合并音频和视频
 
 请选择您要使用的工具：
 """)
 
-if st.button("字幕烧录命令生成器"):
-    st.switch_page("pages/1_字幕烧录命令生成器.py")
+if st.button("字幕处理工具"):
+    st.switch_page("pages/1_字幕处理工具.py")
+
+if st.button("音频处理工具"):
+    st.switch_page("pages/2_音频处理工具.py")
 
 st.markdown("""
 ---
