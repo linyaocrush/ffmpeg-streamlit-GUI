@@ -67,7 +67,7 @@ cd ffmpeg-command-generator
 
 ## 📜 许可证
 
-本项目采用 [MIT 许可证](LICENSE)。
+本项目采用 [MIT 许可证](LICENSE)。[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ## 📞 联系
 
