@@ -1,18 +1,21 @@
 import streamlit as st
 
 # 设置页面标题
-st.title("FFmpeg字幕处理器")
+st.title("FFmpeg字幕处理器 🎬")
 
 # 创建选项卡
-tab1, tab2 = st.tabs(["烧录字幕到视频", "从视频提取软字幕"])
+tab1, tab2 = st.tabs(["合成字幕到视频 🔧", "从视频提取软字幕 📥"])
 
-# 烧录字幕到视频选项卡
+# 合成字幕到视频选项卡
 with tab1:
-    st.header("烧录字幕到视频")
+    st.header("合成字幕到视频")
     
-    # 输入视频和字幕文件名
-    video_file = st.text_input("视频文件名（包括后缀）", "example.mp4", key="video_file_burn")
-    subtitle_file = st.text_input("字幕文件名（包括后缀）", "subtitle.srt", key="subtitle_file_burn")
+    # 使用列来组织输入字段
+    col1, col2 = st.columns(2)
+    with col1:
+        video_file = st.text_input("视频文件名（包括后缀）", "example.mp4", key="video_file_burn")
+    with col2:
+        subtitle_file = st.text_input("字幕文件名（包括后缀）", "subtitle.srt", key="subtitle_file_burn")
 
     # 选择是否为软字幕
     soft_subtitle = st.checkbox("使用软字幕（不重新编码视频）")
@@ -43,75 +46,91 @@ with tab1:
 
     # 如果需要重新编码，则显示编码选项
     if reencode:
-        # 选择CPU或GPU编码
-        encoding_type = st.radio("选择编码类型", ("CPU", "GPU"))
+        st.markdown("---")
+        st.subheader("编码设置 ⚙️")
         
-        # 根据编码类型显示不同的编码器选项
-        if encoding_type == "CPU":
-            # CPU编码器选项
-            cpu_codec_options = [
-                "libx264", "libx265", "mpeg4", "vp8", "vp9", "h264_nvenc", 
-                "hevc_nvenc", "h264_amf", "hevc_amf", "h264_qsv", "hevc_qsv",
-                "h264_videotoolbox", "hevc_videotoolbox"
-            ]
-            codec = st.selectbox("选择CPU编码器", cpu_codec_options)
-        else:  # GPU编码
-            # 选择GPU品牌
-            gpu_brand = st.selectbox("选择GPU品牌", ("NVIDIA", "AMD", "Intel"))
+        # 使用expander来组织高级选项
+        with st.expander("基本编码选项", expanded=True):
+            # 选择CPU或GPU编码
+            encoding_type = st.radio("选择编码类型", ("CPU", "GPU"))
             
-            # 根据GPU品牌显示对应的编码器
-            if gpu_brand == "NVIDIA":
-                gpu_codec_options = ["h264_nvenc", "hevc_nvenc", "av1_nvenc"]
-            elif gpu_brand == "AMD":
-                gpu_codec_options = ["h264_amf", "hevc_amf", "av1_amf"]
-            else:  # Intel
-                gpu_codec_options = ["h264_qsv", "hevc_qsv", "av1_qsv"]
+            # 根据编码类型显示不同的编码器选项
+            if encoding_type == "CPU":
+                # CPU编码器选项
+                cpu_codec_options = [
+                    "libx264", "libx265", "mpeg4", "vp8", "vp9", "h264_nvenc", 
+                    "hevc_nvenc", "h264_amf", "hevc_amf", "h264_qsv", "hevc_qsv",
+                    "h264_videotoolbox", "hevc_videotoolbox"
+                ]
+                codec = st.selectbox("选择CPU编码器", cpu_codec_options)
+            else:  # GPU编码
+                # 选择GPU品牌
+                gpu_brand = st.selectbox("选择GPU品牌", ("NVIDIA", "AMD", "Intel"))
+                
+                # 根据GPU品牌显示对应的编码器
+                if gpu_brand == "NVIDIA":
+                    gpu_codec_options = ["h264_nvenc", "hevc_nvenc", "av1_nvenc"]
+                elif gpu_brand == "AMD":
+                    gpu_codec_options = ["h264_amf", "hevc_amf", "av1_amf"]
+                else:  # Intel
+                    gpu_codec_options = ["h264_qsv", "hevc_qsv", "av1_qsv"]
+                
+                codec = st.selectbox(f"选择{gpu_brand} GPU编码器", gpu_codec_options)
+        
+        with st.expander("高级编码选项"):
+            # 网页优化选项
+            web_optimization = st.checkbox("启用网页优化（针对网络流媒体播放优化）")
             
-            codec = st.selectbox(f"选择{gpu_brand} GPU编码器", gpu_codec_options)
+            # 码率控制模式
+            bitrate_mode = st.selectbox("选择码率控制模式", (
+                "固定码率(CBR)", 
+                "可变码率(VBR)", 
+                "恒定质量(CQ/CRF)", 
+                "平均码率(ABR)",
+                "无损编码(Lossless)"
+            ))
+            
+            # 根据码率控制模式显示不同的参数输入
+            if bitrate_mode == "固定码率(CBR)":
+                bitrate = st.text_input("目标码率 (例如: 1000k)", "1000k", key="bitrate_cbr_burn")
+                minrate = bitrate
+                maxrate = bitrate
+                bufsize = st.text_input("缓冲区大小 (例如: 2000k)", "2000k", key="bufsize_cbr_burn")
+            elif bitrate_mode == "可变码率(VBR)":
+                bitrate = st.text_input("平均码率 (例如: 1000k)", "1000k", key="bitrate_vbr_burn")
+                minrate = st.text_input("最小码率 (例如: 500k)", "500k", key="minrate_vbr_burn")
+                maxrate = st.text_input("最大码率 (例如: 1500k)", "1500k", key="maxrate_vbr_burn")
+                bufsize = st.text_input("缓冲区大小 (例如: 2000k)", "2000k", key="bufsize_vbr_burn")
+            elif bitrate_mode == "恒定质量(CQ/CRF)":
+                if codec in ["libx264", "h264_nvenc", "h264_amf", "h264_qsv"]:
+                    crf_value = st.slider("CRF值 (H.264, 越小质量越高)", 0, 51, 23)
+                elif codec in ["libx265", "hevc_nvenc", "hevc_amf", "hevc_qsv"]:
+                    crf_value = st.slider("CRF值 (H.265, 越小质量越高)", 0, 51, 28)
+                else:
+                    crf_value = st.slider("QP值 (其他编码器, 越小质量越高)", 0, 51, 23)
+            elif bitrate_mode == "平均码率(ABR)":
+                bitrate = st.text_input("目标码率 (例如: 1000k)", "1000k", key="bitrate_abr_burn")
+            else:  # 无损编码
+                lossless_option = True
+            
+            # 帧率
+            framerate = st.text_input("帧率 (例如: 30)", "30", key="framerate_burn")
+            
+            # 线程数
+            threads = st.slider("线程数", 1, 16, 4)
         
-        # 网页优化选项
-        web_optimization = st.checkbox("启用网页优化（针对网络流媒体播放优化）")
-        
-        # 码率控制模式
-        bitrate_mode = st.selectbox("选择码率控制模式", (
-            "固定码率(CBR)", 
-            "可变码率(VBR)", 
-            "恒定质量(CQ/CRF)", 
-            "平均码率(ABR)",
-            "无损编码(Lossless)"
-        ))
-        
-        # 根据码率控制模式显示不同的参数输入
-        if bitrate_mode == "固定码率(CBR)":
-            bitrate = st.text_input("目标码率 (例如: 1000k)", "1000k", key="bitrate_cbr_burn")
-            minrate = bitrate
-            maxrate = bitrate
-            bufsize = st.text_input("缓冲区大小 (例如: 2000k)", "2000k", key="bufsize_cbr_burn")
-        elif bitrate_mode == "可变码率(VBR)":
-            bitrate = st.text_input("平均码率 (例如: 1000k)", "1000k", key="bitrate_vbr_burn")
-            minrate = st.text_input("最小码率 (例如: 500k)", "500k", key="minrate_vbr_burn")
-            maxrate = st.text_input("最大码率 (例如: 1500k)", "1500k", key="maxrate_vbr_burn")
-            bufsize = st.text_input("缓冲区大小 (例如: 2000k)", "2000k", key="bufsize_vbr_burn")
-        elif bitrate_mode == "恒定质量(CQ/CRF)":
-            if codec in ["libx264", "h264_nvenc", "h264_amf", "h264_qsv"]:
-                crf_value = st.slider("CRF值 (H.264, 越小质量越高)", 0, 51, 23)
-            elif codec in ["libx265", "hevc_nvenc", "hevc_amf", "hevc_qsv"]:
-                crf_value = st.slider("CRF值 (H.265, 越小质量越高)", 0, 51, 28)
-            else:
-                crf_value = st.slider("QP值 (其他编码器, 越小质量越高)", 0, 51, 23)
-        elif bitrate_mode == "平均码率(ABR)":
-            bitrate = st.text_input("目标码率 (例如: 1000k)", "1000k", key="bitrate_abr_burn")
-        else:  # 无损编码
-            lossless_option = True
-        
-        # 帧率
-        framerate = st.text_input("帧率 (例如: 30)", "30", key="framerate_burn")
-        
-        # 线程数
-        threads = st.slider("线程数", 1, 16, 4)
+        # 分辨率调整选项
+        with st.expander("分辨率调整（可选）"):
+            resize_option = st.checkbox("调整视频分辨率")
+            if resize_option:
+                width = st.number_input("宽度 (像素)", min_value=1, value=1920)
+                height = st.number_input("高度 (像素)", min_value=1, value=1080)
+                # 保持宽高比选项
+                keep_aspect_ratio = st.checkbox("保持宽高比", value=True)
 
     # 生成命令按钮
-    if st.button("生成FFmpeg命令"):
+    st.markdown("---")
+    if st.button("生成FFmpeg命令 🎛️", type="primary"):
         # 构造输出文件名
         if output_filename_custom:
             output_filename = f"{output_filename_custom}.{output_format}"
@@ -171,6 +190,13 @@ with tab1:
                 # 添加帧率和线程数
                 cmd_parts.append(f"-r {framerate} -threads {threads}")
                 
+                # 添加分辨率调整参数
+                if resize_option:
+                    if keep_aspect_ratio:
+                        cmd_parts.append(f"-vf scale={width}:{height}:force_original_aspect_ratio=decrease,pad={width}:{height}:(ow-iw)/2:(oh-ih)/2")
+                    else:
+                        cmd_parts.append(f"-vf scale={width}:{height}")
+                
                 # 添加音频和字幕编码参数
                 cmd_parts.append(f"-c:a copy -c:s {subtitle_codec} -metadata:s:s:0 language=chi")
                 
@@ -228,6 +254,13 @@ with tab1:
             # 添加帧率和线程数
             cmd_parts.append(f"-r {framerate} -threads {threads}")
             
+            # 添加分辨率调整参数
+            if resize_option:
+                if keep_aspect_ratio:
+                    cmd_parts.append(f"-vf scale={width}:{height}:force_original_aspect_ratio=decrease,pad={width}:{height}:(ow-iw)/2:(oh-ih)/2")
+                else:
+                    cmd_parts.append(f"-vf scale={width}:{height}")
+            
             # 添加音频编码参数
             cmd_parts.append("-c:a copy")
             
@@ -243,29 +276,36 @@ with tab1:
 
 # 从视频提取软字幕选项卡
 with tab2:
-    st.header("从视频提取软字幕")
+    st.header("从视频提取软字幕 📥")
     
-    # 输入视频文件名
-    video_file_extract = st.text_input("视频文件名（包括后缀）", "example.mp4", key="video_file_extract")
-    
-    # 选择字幕轨道
-    subtitle_track = st.number_input("字幕轨道编号", min_value=0, value=0, step=1)
-    
-    # 选择输出字幕格式
-    subtitle_formats = ["srt", "ass", "ssa", "sub", "idx", "vtt"]
-    output_subtitle_format = st.selectbox("选择输出字幕格式", subtitle_formats)
-    
-    # 自定义输出文件名
-    custom_output_filename_extract = st.text_input("自定义输出文件名（不包括后缀）", "", key="extract_subtitle_filename")
+    # 使用列来组织输入字段
+    col1, col2 = st.columns([2, 1])
+    with col1:
+        # 输入视频文件名
+        video_file_extract = st.text_input("视频文件名（包括后缀）", "example.mp4", key="video_file_extract")
+    with col2:
+        # 选择字幕轨道
+        subtitle_track = st.number_input("轨道编号", min_value=0, value=0, step=1, key="subtitle_track")
+
+    # 使用列来组织输出格式和自定义文件名
+    col3, col4 = st.columns(2)
+    with col3:
+        # 选择输出字幕格式
+        subtitle_formats = ["srt", "ass", "ssa", "sub", "idx", "vtt"]
+        output_subtitle_format = st.selectbox("输出字幕格式", subtitle_formats, key="output_subtitle_format")
+    with col4:
+        # 自定义输出文件名
+        custom_output_filename_extract = st.text_input("自定义文件名（不包括后缀）", "", key="extract_subtitle_filename")
     
     # 高级选项
-    with st.expander("高级选项"):
+    with st.expander("高级选项 ⚙️"):
         # 选择字符编码
         encoding_options = ["UTF-8", "GBK", "GB2312", "ASCII"]
-        subtitle_encoding = st.selectbox("字符编码", encoding_options)
+        subtitle_encoding = st.selectbox("字符编码", encoding_options, key="subtitle_encoding")
     
     # 生成命令按钮
-    if st.button("生成提取字幕命令"):
+    st.markdown("---")
+    if st.button("生成提取字幕命令 🎛️", type="primary", key="generate_extract_command"):
         # 构造输出文件名
         if custom_output_filename_extract:
             output_filename = f"{custom_output_filename_extract}.{output_subtitle_format}"
@@ -289,19 +329,28 @@ with tab2:
         command = " ".join(cmd_parts)
         
         # 显示生成的命令
-        st.text_area("生成的FFmpeg命令", command, height=150)
-        st.info("请将上述命令复制到命令行中执行。确保视频文件在同一目录下。")
+        st.text_area("生成的FFmpeg命令", command, height=150, key="extract_command_output")
+        st.info("请将上述命令复制到命令行中执行。确保视频文件在同一目录下。 ✅")
 
 # 使用说明
 st.markdown("""
-### 使用说明
-1. **烧录字幕到视频**：
-   - 在上方输入视频文件名和字幕文件幕文件
-2. 选择是否使用软字幕。
-3. 根据选择的字幕类型，选择合适的输出封装格式。
-4. 如果选择软字幕，可以决定是否重新编码视频；如果选择硬字幕，将强制重新编码视频。
-5. 如果需要重新编码，可以选择CPU或GPU编码，并根据选择显示相应的编码器选项。
-6. 选择码率控制模式并设置相应参数。
-7. 点击"生成FFmpeg命令"按钮。
-8. 将生成的命令复制到命令行中执行。
+### 使用说明 📝
+1. **合成字幕到视频**：
+   - 在上方输入视频文件名和字幕文件名
+   - 选择是否使用软字幕
+   - 根据选择的字幕类型，选择合适的输出封装格式
+   - 如果选择软字幕，可以决定是否重新编码视频；如果选择硬字幕，将强制重新编码视频
+   - 如果需要重新编码，可以选择CPU或GPU编码，并根据选择显示相应的编码器选项
+   - 选择码率控制模式并设置相应参数
+   - 点击"生成FFmpeg命令"按钮
+   - 将生成的命令复制到命令行中执行
+
+2. **从视频提取软字幕**：
+   - 输入视频文件名
+   - 选择要提取的字幕轨道编号
+   - 选择输出字幕格式
+   - 可以自定义输出文件名
+   - 在高级选项中可设置字符编码
+   - 点击"生成提取字幕命令"按钮
+   - 将生成的命令复制到命令行中执行
 """)
