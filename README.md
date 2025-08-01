@@ -45,7 +45,6 @@
 
 - 📧 邮箱：[xiaokuiace@gmail.com](mailto:xiaokuiace@gmail.com)
 - 🐛 Issues：[GitHub Issues](https://github.com/linyaocrush/ffmpeg-streamlit-TOOL/issues)
-- 💬 讨论：[GitHub Discussions](https://github.com/linyaocrush/ffmpeg-streamlit-GUI/discussions)
 
 ---
 
