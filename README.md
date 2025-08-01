@@ -1,35 +1,31 @@
-# FFmpeg 多媒体处理工具集
-
+# FFmpeg 命令生成器
 ![Streamlit App](https://img.shields.io/badge/Streamlit-FF4B4B?style=for-the-badge&logo=Streamlit&logoColor=white)
 ![FFmpeg](https://img.shields.io/badge/FFmpeg-007808?style=for-the-badge&logo=ffmpeg&logoColor=white)
 
-一个基于Streamlit的图形化工具集，帮助用户轻松完成视频字幕处理、音频提取与合并等多媒体任务，无需记忆复杂的FFmpeg命令行参数。
+一个基于Streamlit的图形化工具，帮助用户轻松生成视频字幕处理、音频提取与合并等命令，无需记忆复杂的FFmpeg命令行参数。
 
-## ✨ 功能特性
+## 🎯 核心优势
 
-- 🖥️ 直观的图形用户界面，无需命令行经验
-- 🔤 **字幕处理工具**：
-  - 将字幕烧录到视频（硬字幕）
-  - 从视频中提取软字幕（支持SRT、ASS、SSA等格式）
-  - 支持多轨道字幕选择与自定义字符编码
-- 🔊 **音频处理工具**：
-  - 从视频中提取音频（支持MP3、AAC、WAV等格式）
-  - 合并音视频文件
-  - 音频质量与编码参数自定义
-- 🎞️ 自定义输出文件名与格式
-- 🔄 实时预览生成的FFmpeg命令
-- 📋 一键复制命令到剪贴板
+- 🖥️ 零门槛：直观的图形界面，无需命令行经验
+- 🔄 实时预览：即时查看生成的 FFmpeg 命令
+- 📋 一键复制：快速复制命令到剪贴板
+- ⚙️ 高度可定制：丰富的参数选项满足各种需求
+- 🚀 快速部署：一键启动，开箱即用
 
 ## 🚀 快速开始
 
 ### 前置要求
-- Python 3.8+
+- Python
 - FFmpeg（已添加到系统PATH）
 
 ### 使用方法
 1. 下载项目到本地
 2. 双击运行 **启动.bat** 文件
+   - 或者在命令行中运行 `streamlit run app.py`
 3. 在浏览器中打开显示的本地地址（通常是 http://localhost:8501）
+4. 根据需要选择功能模块，填写参数
+5. 点击 **生成命令** 按钮查看 FFmpeg 命令
+6. 将命令复制到cmd中运行（在视频文件同一目录下开启CMD）
 
 ## 🖥️ 界面预览
 
@@ -41,35 +37,15 @@
 |----------|----------|
 | ![音频处理](https://youke1.picui.cn/s1/2025/08/01/688ca9aaa611c.png) | ![命令预览](https://youke1.picui.cn/s1/2025/08/01/688ca9a96c782.png) |
 
-## 🛠️ 使用指南
-
-### 字幕处理工具
-1. 选择"烧录字幕到视频"或"从视频提取软字幕"选项卡
-2. 输入视频/字幕文件名（包括后缀）
-3. 根据需要调整高级选项（字幕轨道、编码格式等）
-4. 点击"生成FFmpeg命令"按钮
-5. 复制命令到视频文件所在目录的命令行中执行
-
-### 音频处理工具
-1. 选择"提取音频"或"合并音视频"选项卡
-2. 输入源文件名称
-3. 选择输出格式与质量参数
-4. 可选择自定义输出文件名
-5. 生成并复制命令执行
-
-### 视频转码工具
-1. 输入源文件名称
-2. 选择编码方式与其他信息
-3. 可选择自定义输出文件名
-4. 生成并复制命令执行
-
 ## 📜 许可证
 
 本项目采用 [MIT 许可证](LICENSE)
 
-## 📞 联系
+## 📞 联系方式
 
-如有任何问题或建议，请通过邮箱联系：xiaokuiace@gmail.com
+- 📧 邮箱：[xiaokuiace@gmail.com](mailto:xiaokuiace@gmail.com)
+- 🐛 Issues：[GitHub Issues](https://github.com/xiaokuiace/ffmpeg-streamlit-GUI/issues)
+- 💬 讨论：[GitHub Discussions](https://github.com/xiaokuiace/ffmpeg-streamlit-GUI/discussions)
 
 ---
 
