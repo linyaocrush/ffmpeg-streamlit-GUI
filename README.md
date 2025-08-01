@@ -5,7 +5,6 @@
 
 一个基于Streamlit的图形化工具，帮助用户轻松生成复杂的FFmpeg命令行脚本，无需记忆繁琐的参数。
 
-[![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://your-streamlit-app-url.com)
 
 ## ✨ 功能特性
 
