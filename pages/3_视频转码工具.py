@@ -65,48 +65,66 @@ else:  # GPU编码
 # 网页优化选项
 web_optimization = st.checkbox("启用网页优化（针对网络流媒体播放优化）", key="web_optimization")
 
+# 预设选项
+enable_preset = st.checkbox("启用编码预设", value=False, key="enable_preset")
+if enable_preset:
+    preset_options = ["ultrafast", "superfast", "veryfast", "faster", "fast", "medium", "slow", "slower", "veryslow"]
+    preset = st.selectbox("编码预设 (平衡编码速度和压缩效率)", preset_options, index=5, key="preset")  # 默认选择medium
+
 # 码率控制模式
-bitrate_mode = st.selectbox("码率控制模式", (
-    "固定码率(CBR)", 
-    "可变码率(VBR)", 
-    "恒定质量(CQ/CRF)", 
-    "平均码率(ABR)",
-    "无损编码(Lossless)"
-), key="bitrate_mode")
+enable_bitrate = st.checkbox("启用码率控制", value=False, key="enable_bitrate")
+if enable_bitrate:
+    bitrate_mode = st.selectbox("码率控制模式", (
+        "固定码率(CBR)", 
+        "可变码率(VBR)", 
+        "恒定质量(CQ/CRF)", 
+        "平均码率(ABR)",
+        "无损编码(Lossless)"
+    ), key="bitrate_mode")
 
-# 根据码率控制模式显示不同的参数输入
-if bitrate_mode == "固定码率(CBR)":
-    bitrate_col1, bitrate_col2 = st.columns(2)
-    with bitrate_col1:
-        bitrate = st.text_input("目标码率", "1000k", placeholder="例如: 1000k", key="bitrate_cbr")
-        minrate = bitrate
+    # 初始化变量
+    bitrate = ""
+    minrate = ""
+    maxrate = ""
+    bufsize = ""
+    crf_value = ""
+
+    # 根据码率控制模式显示不同的参数输入
+    if bitrate_mode == "固定码率(CBR)":
+        bitrate_col1, bitrate_col2 = st.columns(2)
+        with bitrate_col1:
+            bitrate = st.text_input("目标码率", "1000k", placeholder="例如: 1000k", key="bitrate_cbr")
+            minrate = bitrate
+        with bitrate_col2:
+            bufsize = st.text_input("缓冲区大小", "2000k", placeholder="例如: 2000k", key="bufsize_cbr")
+        # 为CBR模式设置maxrate
         maxrate = bitrate
-    with bitrate_col2:
-        bufsize = st.text_input("缓冲区大小", "2000k", placeholder="例如: 2000k", key="bufsize_cbr")
-elif bitrate_mode == "可变码率(VBR)":
-    bitrate_col1, bitrate_col2, bitrate_col3, bitrate_col4 = st.columns(4)
-    with bitrate_col1:
-        bitrate = st.text_input("平均码率", "1000k", placeholder="例如: 1000k", key="bitrate_vbr")
-    with bitrate_col2:
-        minrate = st.text_input("最小码率", "500k", placeholder="例如: 500k", key="minrate_vbr")
-    with bitrate_col3:
-        maxrate = st.text_input("最大码率", "1500k", placeholder="例如: 1500k", key="maxrate_vbr")
-    with bitrate_col4:
-        bufsize = st.text_input("缓冲区大小", "2000k", placeholder="例如: 2000k", key="bufsize_vbr")
-elif bitrate_mode == "恒定质量(CQ/CRF)":
-    if codec in ["libx264", "h264_nvenc", "h264_amf", "h264_qsv"]:
-        crf_value = st.slider("CRF值 (H.264)", 0, 51, 23, key="crf_h264")
-    elif codec in ["libx265", "hevc_nvenc", "hevc_amf", "hevc_qsv"]:
-        crf_value = st.slider("CRF值 (H.265)", 0, 51, 28, key="crf_hevc")
-    else:
-        crf_value = st.slider("QP值 (其他编码器)", 0, 51, 23, key="qp_other")
-elif bitrate_mode == "平均码率(ABR)":
-    bitrate = st.text_input("目标码率", "1000k", placeholder="例如: 1000k", key="bitrate_abr")
-else:  # 无损编码
-    st.info("无损编码已选择，将使用最佳质量设置")
+    elif bitrate_mode == "可变码率(VBR)":
+        bitrate_col1, bitrate_col2, bitrate_col3, bitrate_col4 = st.columns(4)
+        with bitrate_col1:
+            bitrate = st.text_input("平均码率", "1000k", placeholder="例如: 1000k", key="bitrate_vbr")
+        with bitrate_col2:
+            minrate = st.text_input("最小码率", "500k", placeholder="例如: 500k", key="minrate_vbr")
+        with bitrate_col3:
+            maxrate = st.text_input("最大码率", "1500k", placeholder="例如: 1500k", key="maxrate_vbr")
+        with bitrate_col4:
+            bufsize = st.text_input("缓冲区大小", "2000k", placeholder="例如: 2000k", key="bufsize_vbr")
+    elif bitrate_mode == "恒定质量(CQ/CRF)":
+        if codec in ["libx264", "h264_nvenc", "h264_amf", "h264_qsv"]:
+            crf_value = st.slider("CRF值 (H.264)", 0, 51, 23, key="crf_h264")
+        elif codec in ["libx265", "hevc_nvenc", "hevc_amf", "hevc_qsv"]:
+            crf_value = st.slider("CRF值 (H.265)", 0, 51, 28, key="crf_hevc")
+        else:
+            crf_value = st.slider("QP值 (其他编码器)", 0, 51, 23, key="qp_other")
+    elif bitrate_mode == "平均码率(ABR)":
+        bitrate = st.text_input("目标码率", "1000k", placeholder="例如: 1000k", key="bitrate_abr")
+    else:  # 无损编码
+        st.info("无损编码已选择，将使用最佳质量设置")
 
-# 帧率
-framerate = st.text_input("帧率", "30", placeholder="例如: 30", key="framerate")
+# 帧率选项
+enable_framerate = st.checkbox("启用帧率控制", value=False, key="enable_framerate")
+if enable_framerate:
+    framerate = st.text_input("帧率", "30", placeholder="例如: 30", key="framerate_input")
 
 # 分辨率调整选项
 st.header("分辨率调整 📐")
@@ -153,26 +171,31 @@ if st.button("生成FFmpeg命令 🎛️", type="primary", key="generate_command
     # 添加视频编码参数
     cmd_parts.append(f"-c:v {codec}")
     
-    # 根据码率控制模式添加相应参数
-    if bitrate_mode == "固定码率(CBR)":
-        cmd_parts.append(f"-b:v {bitrate} -minrate {minrate} -maxrate {maxrate} -bufsize {bufsize}")
-    elif bitrate_mode == "可变码率(VBR)":
-        cmd_parts.append(f"-b:v {bitrate} -minrate {minrate} -maxrate {maxrate} -bufsize {bufsize}")
-    elif bitrate_mode == "恒定质量(CQ/CRF)":
-        if codec in ["libx264", "libx265"]:
-            cmd_parts.append(f"-crf {crf_value}")
-        else:
-            cmd_parts.append(f"-qp {crf_value}")
-    elif bitrate_mode == "平均码率(ABR)":
-        cmd_parts.append(f"-b:v {bitrate}")
-    elif bitrate_mode == "无损编码(Lossless)":
-        if codec in ["libx264"]:
-            cmd_parts.append("-preset ultrafast -crf 0")
-        elif codec in ["libx265"]:
-            cmd_parts.append("-preset ultrafast -x265-params lossless=1")
-        else:
-            cmd_parts.append("-qscale 0")
+    # 添加预设参数
+    if enable_preset and preset and preset != "medium":  # 只有当选择了非默认的预设时才添加
+        cmd_parts.append(f"-preset {preset}")
     
+    # 根据码率控制模式添加相应参数
+    if enable_bitrate:
+        if bitrate_mode == "固定码率(CBR)":
+            cmd_parts.append(f"-b:v {bitrate} -minrate {minrate} -maxrate {maxrate} -bufsize {bufsize}")
+        elif bitrate_mode == "可变码率(VBR)":
+            cmd_parts.append(f"-b:v {bitrate} -minrate {minrate} -maxrate {maxrate} -bufsize {bufsize}")
+        elif bitrate_mode == "恒定质量(CQ/CRF)":
+            if codec in ["libx264", "libx265"]:
+                cmd_parts.append(f"-crf {crf_value}")
+            else:
+                cmd_parts.append(f"-qp {crf_value}")
+        elif bitrate_mode == "平均码率(ABR)":
+            cmd_parts.append(f"-b:v {bitrate}")
+        elif bitrate_mode == "无损编码(Lossless)":
+            if codec in ["libx264"]:
+                cmd_parts.append("-preset ultrafast -crf 0")
+            elif codec in ["libx265"]:
+                cmd_parts.append("-preset ultrafast -x265-params lossless=1")
+            else:
+                cmd_parts.append("-qscale 0")
+
     # 添加网页优化参数
     if web_optimization:
         if codec == "libx264":
@@ -187,8 +210,12 @@ if st.button("生成FFmpeg命令 🎛️", type="primary", key="generate_command
             cmd_parts.append("-movflags +faststart")
     
     # 添加帧率
-    cmd_parts.append(f"-r {framerate} -threads {threads}")
+    if enable_framerate:
+        cmd_parts.append(f"-r {framerate}")
     
+    # 添加线程数
+    cmd_parts.append(f"-threads {threads}")
+
     # 添加分辨率调整参数
     if resize_option:
         if keep_aspect_ratio:

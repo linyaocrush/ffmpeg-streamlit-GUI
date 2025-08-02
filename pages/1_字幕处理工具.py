@@ -78,6 +78,12 @@ with tab1:
                 codec = st.selectbox(f"选择{gpu_brand} GPU编码器", gpu_codec_options)
         
         with st.expander("高级编码选项"):
+            # 添加预设选项
+            use_preset = st.checkbox("使用预设（Preset）", value=True, key="use_preset")
+            if use_preset:
+                preset_options = ["ultrafast", "superfast", "veryfast", "faster", "fast", "medium", "slow", "slower", "veryslow"]
+                preset = st.selectbox("选择预设", preset_options, index=5, key="preset_selection")  # 默认选择medium
+            
             # 网页优化选项
             web_optimization = st.checkbox("启用网页优化（针对网络流媒体播放优化）")
             
@@ -154,6 +160,10 @@ with tab1:
                 # 添加视频编码参数
                 cmd_parts.append(f"-c:v {codec}")
                 
+                # 添加预设参数
+                if use_preset:
+                    cmd_parts.append(f"-preset {preset}")
+                
                 # 根据码率控制模式添加相应参数
                 if bitrate_mode == "固定码率(CBR)":
                     cmd_parts.append(f"-b:v {bitrate} -minrate {minrate} -maxrate {maxrate} -bufsize {bufsize}")
@@ -205,9 +215,17 @@ with tab1:
                 
                 # 组合命令
                 command = " ".join(cmd_parts)
+                
+                # 显示生成的命令
+                st.text_area("生成的FFmpeg命令", command, height=150)
+                st.info("请将上述命令复制到命令行中执行。确保视频文件和字幕文件在同一目录下。")
             else:
                 # 软字幕不重新编码命令
                 command = f"ffmpeg -i \"{video_file}\" -i \"{subtitle_file}\" -c:v copy -c:a copy -c:s {subtitle_codec} -metadata:s:s:0 language=chi \"{output_filename}\""
+                
+                # 显示生成的命令
+                st.text_area("生成的FFmpeg命令", command, height=150)
+                st.info("请将上述命令复制到命令行中执行。确保视频文件和字幕文件在同一目录下。")
         else:
             # 硬字幕重新编码命令
             cmd_parts = [f"ffmpeg -i \"{video_file}\""]
@@ -217,6 +235,10 @@ with tab1:
             
             # 添加视频编码参数
             cmd_parts.append(f"-c:v {codec}")
+            
+            # 添加预设参数
+            if use_preset:
+                cmd_parts.append(f"-preset {preset}")
             
             # 根据码率控制模式添加相应参数
             if bitrate_mode == "固定码率(CBR)":
