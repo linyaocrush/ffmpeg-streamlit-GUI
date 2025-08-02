@@ -17,6 +17,7 @@
 ### 前置要求
 - Python
 - FFmpeg（已添加到系统PATH）
+- streamlit (安装使用pip install streamlit)
 
 ### 使用方法
 1. 下载项目到本地
