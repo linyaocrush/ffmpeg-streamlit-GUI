@@ -44,6 +44,11 @@ with button_col3:
     if st.button("视频转码工具", key="transcode_btn", help="视频格式转换和编码"):
         st.switch_page("pages/3_视频转码工具.py")
 
+# 添加新按钮
+with st.columns(3)[2]:  # 使用新的列布局
+    if st.button("视频处理工具", key="video_processing_btn", help="视频剪辑、合并和处理"):
+        st.switch_page("pages/4_视频处理工具.py")
+
 # 关于本工具
 st.markdown("""
 <div style="background-color: #fff8dc; padding: 15px; border-radius: 10px; margin-top: 30px;">
