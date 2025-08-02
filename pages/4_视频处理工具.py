@@ -1,4 +1,7 @@
 import streamlit as st
+import matplotlib.font_manager as fm
+from fontTools.ttLib import TTFont
+import os
 
 # 设置页面标题和图标
 st.set_page_config(page_title="FFmpeg 视频处理工具", page_icon="🎬")
@@ -7,7 +10,6 @@ st.set_page_config(page_title="FFmpeg 视频处理工具", page_icon="🎬")
 st.title("FFmpeg 视频处理工具 🎬")
 
 # 创建选项卡
-# 修改这一行，添加新的标签页
 tab1, tab2, tab3, tab4 = st.tabs(["视频剪辑 ✂️", "视频合并 🔄", "视频处理 ⚙️", "视频水印 🧧"])
 
 # 视频剪辑选项卡
@@ -227,35 +229,6 @@ with tab3:
         st.text_area("生成的FFmpeg命令", command, height=150, key="process_command_output")
         st.success("✅ 命令已生成！请将上述命令复制到命令行中执行。确保视频文件在同一目录下。")
 
-# 使用说明
-st.markdown("""
-### 使用说明 📝
-1. **视频剪辑**：
-   - 输入视频文件名
-   - 选择时间输入方式（开始/结束时间 或 开始时间/持续时间）
-   - 输入相应的时间参数
-   - 点击生成命令按钮
-   - 将生成的命令复制到命令行中执行
-
-2. **视频合并**：
-   - 添加需要合并的视频文件路径
-   - 可使用"+"按钮添加更多文件
-   - 点击生成命令按钮
-   - 按照提示创建文件列表，然后执行命令
-
-3. **视频处理**：
-   - 选择需要的处理选项（缩放、变速、裁剪、旋转）
-   - 设置相应参数
-   - 点击生成命令按钮
-   - 将生成的命令复制到命令行中执行
-
-4. **注意事项**：
-   - 确保所有文件都在同一目录下
-   - 命令执行前请检查文件名是否正确
-   - 某些操作可能需要重新编码，处理时间较长
-""")
-
-
 # 视频水印选项卡
 with tab4:
     st.header("视频水印工具 🧧")
@@ -274,31 +247,56 @@ with tab4:
         
         # 获取系统字体列表
         try:
-            font_list = fm.findSystemFonts(fontpaths=None, fontext='ttf')
-            font_names = {}
-            for font_path in font_list[:50]:  # 限制数量以提高性能
+            # 扫描字体并读取中文名称或英文名称
+            font_paths = fm.findSystemFonts(fontext='ttf') + fm.findSystemFonts(fontext='otf')
+            name_map = {}
+            for fp in font_paths[:500]:  # 限制字体数量
                 try:
-                    font_prop = fm.FontProperties(fname=font_path)
-                    name = font_prop.get_name()
-                    if name not in font_names:
-                        font_names[name] = font_path
-                except:
-                    pass
-            
-            # 转换为排序列表
-            sorted_fonts = sorted(font_names.keys())
-            
-            # 如果没有找到字体，提供默认选项
-            if not sorted_fonts:
+                    tt = TTFont(fp, lazy=True)
+                    name_record = None
+                    for rec in tt['name'].names:
+                        # 优先中文名称 (langID 2052,3076)
+                        if rec.nameID == 1 and rec.platformID == 3 and rec.langID in (2052, 3076):
+                            name_record = rec
+                            break
+                    if name_record:
+                        display = name_record.string.decode(name_record.getEncoding())
+                    else:
+                        # fallback to English
+                        en = tt['name'].getName(1, 1, 0, 0x0409)
+                        display = en.string.decode('utf-16-be') if en else os.path.basename(fp)
+                    name_map[display] = fp
+                except Exception:
+                    continue
+            if name_map:
+                # 修改前的代码：
+                # sorted_fonts = sorted(name_map.keys())
+                
+                # 修改后的代码：
+                # 将中文字体显示在最前面
+                font_names = list(name_map.keys())
+                chinese_fonts = [name for name in font_names if any('\u4e00' <= char <= '\u9fff' for char in name)]
+                english_fonts = [name for name in font_names if not any('\u4e00' <= char <= '\u9fff' for char in name)]
+                sorted_fonts = sorted(chinese_fonts) + sorted(english_fonts)
+                
+                # 字体选择
+                selected_font_name = st.selectbox("选择字体（中文/英文）", sorted_fonts, index=0, key="font_selection")
+                font_path = name_map[selected_font_name]
+            else:
+                st.error("未找到系统字体！")
                 sorted_fonts = ['Arial', 'SimHei', 'SimSun', 'Microsoft YaHei']
                 font_names = {name: name for name in sorted_fonts}
-        except:
+                selected_font_name = st.selectbox("选择字体", sorted_fonts, index=0, key="font_selection_default")
+                font_path = font_names[selected_font_name]
+        except Exception as e:
             # 如果无法获取系统字体，使用默认字体列表
             sorted_fonts = ['Arial', 'SimHei', 'SimSun', 'Microsoft YaHei']
             font_names = {name: name for name in sorted_fonts}
+            selected_font_name = st.selectbox("选择字体", sorted_fonts, index=0, key="font_selection_default")
+            font_path = font_names[selected_font_name]
         
-        # 字体选择
-        selected_font_name = st.selectbox("选择字体", sorted_fonts, index=0, key="font_selection")
+        # 注意：删除了重复的字体选择框
+        # selected_font_name = st.selectbox("选择字体", sorted_fonts, index=0, key="font_selection")  # 这行需要删除
         
     # 图片水印选项
     else:
@@ -353,16 +351,13 @@ with tab4:
             else:  # 自定义
                 position = f"x={x_position}:y={y_position}"
             
-            # 获取字体路径
-            font_path = font_names.get(selected_font_name, selected_font_name)
-            
-            # 构建文字水印命令
-            if font_path and not font_path.endswith(('.ttf', '.otf', '.ttc')):
-                # 如果是字体名称而不是路径
-                command = f"ffmpeg -i \"{video_file_watermark}\" -vf \"drawtext=text='{text_content}':fontsize={font_size}:fontcolor=0x{color_hex}@{opacity}:fontfile={font_path}:{position}\" -y \"{output_filename}\""
+            if 'name_map' in locals():
+                font_path = name_map.get(selected_font_name, selected_font_name)
             else:
-                # 如果是字体文件路径
-                command = f"ffmpeg -i \"{video_file_watermark}\" -vf \"drawtext=text='{text_content}':fontsize={font_size}:fontcolor=0x{color_hex}@{opacity}:fontfile='{font_path}':{position}\" -y \"{output_filename}\""
+                font_path = font_names.get(selected_font_name, selected_font_name)
+
+            escaped_font_path = font_path.replace('\\', '/').replace(':', '\\:').replace(' ', '\\ ')
+            command = f"ffmpeg -i \"{video_file_watermark}\" -vf \"drawtext=text='{text_content}':fontsize={font_size}:fontcolor=0x{color_hex}@{opacity}:fontfile='{escaped_font_path}':{position}\" -y \"{output_filename}\""
         else:
             # 根据位置设置图片水印参数
             if position_option == "左上角":
@@ -384,31 +379,3 @@ with tab4:
         # 显示生成的命令
         st.text_area("生成的FFmpeg命令", command, height=150, key="watermark_command_output")
         st.success("✅ 命令已生成！请将上述命令复制到命令行中执行。确保视频文件在同一目录下。")
-
-# 使用说明
-st.markdown("""
-### 使用说明 📝
-1. **视频剪辑**：
-   - 输入视频文件名
-   - 选择时间输入方式（开始/结束时间 或 开始时间/持续时间）
-   - 输入相应的时间参数
-   - 点击生成命令按钮
-   - 将生成的命令复制到命令行中执行
-
-2. **视频合并**：
-   - 添加需要合并的视频文件路径
-   - 可使用"+"按钮添加更多文件
-   - 点击生成命令按钮
-   - 按照提示创建文件列表，然后执行命令
-
-3. **视频处理**：
-   - 选择需要的处理选项（缩放、变速、裁剪、旋转）
-   - 设置相应参数
-   - 点击生成命令按钮
-   - 将生成的命令复制到命令行中执行
-
-4. **注意事项**：
-   - 确保所有文件都在同一目录下
-   - 命令执行前请检查文件名是否正确
-   - 某些操作可能需要重新编码，处理时间较长
-""")
