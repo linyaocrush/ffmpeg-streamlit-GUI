@@ -7,7 +7,8 @@ st.set_page_config(page_title="FFmpeg 音频处理工具", page_icon="🎵")
 st.title("FFmpeg 音频处理工具 🎵")
 
 # 创建选项卡
-tab1, tab2 = st.tabs(["提取音频 📤", "合并音视频 🔄"])
+# 修改这里的标签页创建，添加新的标签页
+tab1, tab2, tab3 = st.tabs(["提取音频 📤", "合并音视频 🔄", "删除音频轨 🗑️"])
 
 # 提取音频选项卡
 with tab1:
@@ -144,7 +145,52 @@ with tab2:
         st.text_area("生成的FFmpeg命令", command, height=150, key="merge_command_output")
         st.success("✅ 命令已生成！请将上述命令复制到命令行中执行。确保视频和音频文件在同一目录下。")
 
+# 删除音频轨选项卡
+with tab3:
+    st.header("删除视频中的音频轨 🗑️")
+    
+    # 输入视频文件名
+    video_file_remove = st.text_input("视频文件名（包括后缀）", "example.mp4", key="video_file_remove")
+    
+    # 选择删除模式
+    remove_mode = st.radio("选择删除模式", ["删除所有音频轨", "删除指定音频轨"], key="remove_mode")
+    
+    # 如果选择删除指定音频轨，则显示轨道编号输入
+    if remove_mode == "删除指定音频轨":
+        track_number = st.number_input("音频轨编号（从0开始）", min_value=0, value=0, key="track_number")
+    
+    # 自定义输出文件名
+    custom_output_filename_remove = st.text_input("自定义输出文件名（可选）", "", key="remove_filename",
+                                                   placeholder="不包括后缀")
+    
+    # 生成命令按钮
+    st.markdown("---")
+    if st.button("生成删除音频轨命令 🎛️", type="primary", key="remove_button"):
+        # 构造输出文件名
+        if custom_output_filename_remove:
+            output_filename = custom_output_filename_remove
+        else:
+            # 根据输入文件名生成输出文件名
+            input_name = video_file_remove.rsplit('.', 1)[0] if '.' in video_file_remove else video_file_remove
+            output_filename = f"{input_name}_no_audio"
+        
+        # 添加文件扩展名
+        file_extension = video_file_remove.split('.')[-1] if '.' in video_file_remove else 'mp4'
+        output_filename_with_ext = f"{output_filename}.{file_extension}"
+        
+        # 构建FFmpeg命令
+        if remove_mode == "删除所有音频轨":
+            command = f"ffmpeg -i \"{video_file_remove}\" -c copy -an \"{output_filename_with_ext}\""
+        else:
+            # 删除指定音频轨的命令
+            command = f"ffmpeg -i \"{video_file_remove}\" -map 0 -c copy -map -0:a:{track_number} \"{output_filename_with_ext}\""
+        
+        # 显示生成的命令
+        st.text_area("生成的FFmpeg命令", command, height=150, key="remove_command_output")
+        st.success("✅ 命令已生成！请将上述命令复制到命令行中执行。确保视频文件在同一目录下。")
+
 # 使用说明
+# 在使用说明中添加关于新功能的说明
 st.markdown("""
 ### 使用说明 📝
 1. **提取音频**：
@@ -161,7 +207,16 @@ st.markdown("""
    - 点击"生成合并音视频命令"按钮
    - 将生成的命令复制到命令行中执行
 
-3. **注意事项**：
+3. **删除音频轨**：
+   - 输入视频文件名
+   - 选择删除模式（删除所有音频轨或删除指定音频轨）
+   - 如果选择删除指定音频轨，输入要删除的音频轨编号（从0开始）
+   - 可自定义输出文件名
+   - 点击"生成删除音频轨命令"按钮
+   - 将生成的命令复制到命令行中执行
+
+4. **注意事项**：
    - 确保所有文件都在同一目录下
    - 命令执行前请检查文件名是否正确
+   - 音频轨编号从0开始计数，可以通过 `ffmpeg -i video.mp4` 命令查看视频文件的音频轨信息
 """)
